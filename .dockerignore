@@ -1,0 +1,13 @@
+.git
+.venv
+**/__pycache__
+**/*.py[cod]
+backend/app.db
+backend/uploads
+backend/ml/*.pth
+backend/ml/*.onnx
+frontend/node_modules
+frontend/dist
+sample_images
+*.md
+.env

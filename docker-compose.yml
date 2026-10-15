@@ -1,0 +1,50 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://skin_user:skin_pass@db:5432/skin_detector
+      - JWT_SECRET=change-me-to-a-long-random-string
+      - JWT_EXPIRY=86400
+      - FLASK_ENV=production
+      - MODEL_PATH=/app/ml/model.pth
+    volumes:
+      - uploads_data:/app/uploads
+      # Uncomment after training to enable real inference:
+      # - ./backend/ml/model.pth:/app/ml/model.pth:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=skin_user
+      - POSTGRES_PASSWORD=skin_pass
+      - POSTGRES_DB=skin_detector
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skin_user -d skin_detector"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  uploads_data:

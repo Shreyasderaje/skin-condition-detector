@@ -1,0 +1,11 @@
+# Core backend dependencies (app runs fully with these, using the demo model).
+# For real ML inference / training see requirements-ml.txt.
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-Cors==4.0.1
+SQLAlchemy==2.0.31
+PyJWT==2.8.0
+python-dotenv==1.0.1
+Pillow==10.4.0
+numpy==1.26.4
+gunicorn==22.0.0

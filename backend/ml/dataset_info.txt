@@ -1,0 +1,49 @@
+DATASET & MODEL NOTES
+=====================
+
+Primary dataset: HAM10000 ("Human Against Machine with 10000 training images")
+  - 10,015 dermatoscopic images, 7 diagnostic categories
+  - Download: https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000
+  - Metadata CSV columns used here: image_id, dx
+
+Secondary/validation: ISIC Archive (free tier) - https://www.isic-archive.com/
+  - Optional extra images; map ISIC diagnosis labels onto the same 7 dx codes
+    before adding them to the folder tree.
+
+Canonical class order (must match ml/preprocessing.py):
+  00_mel  Melanoma               -> risk HIGH
+  01_bcc  Basal Cell Carcinoma   -> risk HIGH
+  02_akiec Actinic Keratosis     -> risk MEDIUM
+  03_bkl  Benign Keratosis       -> risk LOW
+  04_vasc Vascular Lesion        -> risk MEDIUM
+  05_df   Dermatofibroma         -> risk LOW
+  06_nv   Melanocytic Nevus      -> risk LOW
+
+Preprocessing
+  - Resize 224x224 (ResNet50 input)
+  - Normalize with ImageNet stats:
+      mean = [0.485, 0.456, 0.406]
+      std  = [0.229, 0.224, 0.225]
+  - Split 70% train / 15% val / 15% test (stratified per class, seed 42)
+  - Train augmentations: horizontal flip, rotation +-20 deg,
+    brightness/contrast jitter
+
+Model
+  - ResNet50 pretrained on ImageNet, head replaced with
+    Dropout(0.5) -> Linear(2048,256) -> ReLU -> Linear(256,7)
+  - Adam lr=1e-4, class-weighted cross-entropy, 20-30 epochs,
+    early stopping (patience 7) on validation loss
+  - Risk bucket probabilities = sum of the 7 class probabilities per bucket
+  - Exports: ml/model.pth (state_dict) and ml/model.onnx
+
+Scope note
+  - HAM10000 contains no fungal infection / eczema / psoriasis images.
+    The API reports the detected lesion class from the 7 categories above.
+    Adding rural-relevant conditions (fungal, eczema, psoriasis) is listed
+    as future work and requires labelled images from those classes.
+
+Training quickstart (from backend/, after `pip install -r requirements-ml.txt`):
+  python ml/prepare_data.py --metadata HAM10000_metadata.csv \
+      --images <images dir> --out ../data/skin
+  python -m ml.train --data-dir ../data/skin --epochs 30
+  python ml/export_onnx.py

@@ -1,0 +1,8 @@
+# Optional ML stack: real inference with the trained model + training scripts.
+# Install with:  pip install -r requirements-ml.txt
+# CPU wheels are sufficient for inference (<500ms per image on a basic laptop).
+-r requirements.txt
+torch==2.3.1
+torchvision==0.18.1
+onnx==1.16.1
+onnxruntime==1.18.1

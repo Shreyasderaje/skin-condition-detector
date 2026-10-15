@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets & local state
+.env
+backend/app.db
+backend/uploads/
+backend/*.log
+
+# Trained model artifacts (attach via GitHub Release, don't commit ~100MB files)
+backend/ml/model.pth
+backend/ml/model.onnx
+backend/ml/metrics.json
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Misc
+*.log
+.DS_Store
